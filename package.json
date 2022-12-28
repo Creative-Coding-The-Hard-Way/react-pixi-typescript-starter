@@ -1,10 +1,10 @@
 {
-  "name": "react-p5-typescript-starter",
+  "name": "react-pixi-typescript-starter",
   "version": "1.0.0",
   "description": "",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Creative-Coding-The-Hard-Way/react-p5-typescript-starter.git"
+    "url": "git+https://github.com/Creative-Coding-The-Hard-Way/react-pixi-typescript-starter.git"
   },
   "author": "",
   "license": "MIT",
@@ -22,7 +22,7 @@
   "targets": {
     "default": {
       "distDir": "./output",
-      "publicUrl": "/react-p5-typescript-starter/"
+      "publicUrl": "/react-pixi-typescript-starter/"
     }
   },
   "browserlist": [
@@ -33,6 +33,7 @@
   "devDependencies": {
     "@parcel/packager-raw-url": "^2.8.2",
     "@parcel/transformer-webmanifest": "^2.8.2",
+    "@types/pixi.js": "^5.0.0",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.9",
     "assert": "^2.0.0",
@@ -61,9 +62,9 @@
     "*.{js,css,md}": "prettier --write"
   },
   "dependencies": {
-    "@types/p5": "^1.4.3",
+    "@types/pixi": "^1.4.3",
     "normalize.css": "^8.0.1",
-    "p5": "^1.5.0",
+    "pixi.js": "^7.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "valtio": "^1.7.6"

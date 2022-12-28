@@ -1,6 +1,6 @@
-# React+p5.js Typescript Browser Starter
+# React+Pixi.js Typescript Browser Starter
 
-An opinionated starter project for using typescript, react, and p5.js in the
+An opinionated starter project for using Typescript, React, and Pixi.js in the
 browser.
 
 To get started use this repository as a template, run `npm run develop`, and
@@ -35,8 +35,8 @@ make your changes in [./src/sketch.ts](./src/sketch.ts)
 
 ## Tools
 
-- p5.js
-- react
+- Pixi.js
+- React
 - valtio
 - Parcel
 - Typescript

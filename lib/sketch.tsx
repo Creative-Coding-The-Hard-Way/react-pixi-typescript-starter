@@ -1,17 +1,9 @@
-import React from "react";
-import P5 from "p5";
-import P5Sketch from "./P5Sketch";
+import React, { ReactNode } from "react";
+import * as PIXI from "pixi.js";
+import PIXISketch from "./PIXISketch";
 
-export interface SketchProps {
-  /**
-   * The P5 sketch logic.
-   */
-  impl: P5Sketch;
-
-  /**
-   * The renderer to use when creating the P5 canvas.
-   **/
-  renderer: P5.RENDERER;
+export interface SketchProps<T extends PIXISketch> {
+  impl: new (renderer: PIXI.Renderer, stage: PIXI.Container) => T;
 
   /**
    * The CSS class name to use for the Sketch's wrapping div.
@@ -21,121 +13,104 @@ export interface SketchProps {
 
 export interface SketchState {}
 
+function clamp(x: number, min: number, max: number) {
+  if (x < min) {
+    return min;
+  } else if (x > max) {
+    return max;
+  } else {
+    return x;
+  }
+}
+
 /**
  * @description A Sketch is comprised of an isolated `<div>` and `<canvas>`.
  *              The canvas is automatically resized to match the dimensions of
  *              the owning div so the canvas can be controlled using css.
  */
-class Sketch extends React.Component<SketchProps, SketchState> {
-  p5_sketch: P5 | null = null;
+class Sketch<T extends PIXISketch> extends React.Component<
+  SketchProps<T>,
+  SketchState
+> {
   root: HTMLDivElement | null = null;
-  observer: ResizeObserver | null = null;
+  running: boolean = true;
+  previousFrameTime: number = 0;
+  renderer?: PIXI.Renderer = undefined;
   needsResize: boolean = true;
+  observer?: ResizeObserver = undefined;
+  stage?: PIXI.Container = undefined;
+  sketch?: T;
 
-  constructor(props: SketchProps) {
+  constructor(props: SketchProps<T> | Readonly<SketchProps<T>>) {
     super(props);
   }
 
-  setObserver(observer: ResizeObserver) {
-    this.observer = observer;
+  componentDidMount() {
+    console.log("Mount Pixi.js Sketch");
+    this.renderer = new PIXI.Renderer({
+      width: 800,
+      height: 800,
+      background: 0x000000,
+    });
+    this.root!.appendChild(this.renderer.view as HTMLCanvasElement);
+
+    this.stage = new PIXI.Container();
+
+    this.observer = new ResizeObserver(() => {
+      this.needsResize = true;
+    });
+    this.observer.observe(this.root!);
+
+    this.setup();
+    globalThis.requestAnimationFrame(this.animate.bind(this));
   }
 
-  componentDidMount() {
-    console.log("Mount p5 sketch");
+  /// The main application loop.
+  animate() {
+    if (!this.running) {
+      return;
+    }
 
-    let impl = this.props.impl;
-    let root = this.root!;
+    if (this.needsResize) {
+      this.resize();
+      this.needsResize = false;
+    }
 
-    this.p5_sketch = new P5((p5: P5) => {
-      this.observer = new ResizeObserver(() => {
-        this.needsResize = true;
-      });
-      this.observer.observe(root);
+    const currentTime = Date.now();
+    const delta = clamp(currentTime - this.previousFrameTime, 0, 250);
+    this.previousFrameTime = currentTime;
+    const deltaFloat = delta / 1000;
 
-      p5.preload = impl.preload.bind(impl, p5);
-      p5.setup = () => {
-        p5.createCanvas(200, 200, this.props.renderer);
-        impl.setup(p5);
-      };
-      p5.draw = () => {
-        if (this.needsResize) {
-          this.needsResize = false;
-          let [w, h] = [root.clientWidth, root.clientHeight];
-          console.log("resize", w, h);
-          p5.resizeCanvas(w, h);
-          if (impl.canvasResized) {
-            impl.canvasResized(p5, w, h);
-          }
-        }
-        impl.draw(p5);
-      };
+    this.update(deltaFloat);
 
-      if (impl.deviceMoved) {
-        p5.deviceMoved = impl.deviceMoved.bind(impl, p5);
-      }
-      if (impl.deviceTurned) {
-        p5.deviceTurned = impl.deviceTurned.bind(impl, p5);
-      }
-      if (impl.deviceShaken) {
-        p5.deviceShaken = impl.deviceShaken.bind(impl, p5);
-      }
-      if (impl.keyPressed) {
-        p5.keyPressed = impl.keyPressed.bind(impl, p5);
-      }
-      if (impl.keyReleased) {
-        p5.keyReleased = impl.keyReleased.bind(impl, p5);
-      }
-      if (impl.keyTyped) {
-        p5.keyTyped = impl.keyTyped.bind(impl, p5);
-      }
-      if (impl.mouseMoved) {
-        p5.mouseMoved = impl.mouseMoved.bind(impl, p5);
-      }
-      if (impl.mouseDragged) {
-        p5.mouseDragged = impl.mouseDragged.bind(impl, p5);
-      }
-      if (impl.mousePressed) {
-        p5.mousePressed = impl.mousePressed.bind(impl, p5);
-      }
-      if (impl.mouseReleased) {
-        p5.mouseReleased = impl.mouseReleased.bind(impl, p5);
-      }
-      if (impl.mouseClicked) {
-        p5.mouseClicked = impl.mouseClicked.bind(impl, p5);
-      }
-      if (impl.doubleClicked) {
-        p5.doubleClicked = impl.doubleClicked.bind(impl, p5);
-      }
-      if (impl.mouseWheel) {
-        p5.mouseWheel = impl.mouseWheel.bind(impl, p5);
-      }
-      if (impl.touchStarted) {
-        p5.touchStarted = impl.touchStarted.bind(impl, p5);
-      }
-      if (impl.touchMoved) {
-        p5.touchMoved = impl.touchMoved.bind(impl, p5);
-      }
-      if (impl.touchEnded) {
-        p5.touchEnded = impl.touchEnded.bind(impl, p5);
-      }
-      return p5;
-    }, root);
+    this.renderer!.render(this.stage!);
+
+    globalThis.requestAnimationFrame(this.animate.bind(this));
+  }
+
+  setup() {
+    this.sketch = new this.props.impl(this.renderer!, this.stage!);
+  }
+
+  update(dt: number) {
+    this.sketch!.update(dt);
+  }
+
+  resize() {
+    const width = this.root!.clientWidth;
+    const height = this.root!.clientHeight;
+    this.renderer!.resize(width, height);
+    this.sketch!.resized(width, height);
   }
 
   componentWillUnmount() {
-    console.log("Unmount p5 sketch");
-    if (this.observer != null) {
-      this.observer.disconnect();
-      this.observer = null;
-    }
-    if (this.p5_sketch != null) {
-      this.p5_sketch.remove();
-      this.p5_sketch = null;
-    }
+    console.log("Unmount Pixi.js Sketch");
+    this.running = false;
+    this.root!.removeChild(this.renderer!.view as HTMLCanvasElement);
   }
 
   shouldComponentUpdate(
-    _nextProps: Readonly<SketchProps>,
+    _nextProps: Readonly<SketchProps<T>>,
     _nextState: Readonly<SketchState>,
     _nextContext: any
   ): boolean {
@@ -143,12 +118,12 @@ class Sketch extends React.Component<SketchProps, SketchState> {
     return false;
   }
 
-  render(): React.ReactNode {
+  render(): ReactNode {
     return (
       <div
         className={this.props.className}
         ref={(root) => (this.root = root)}
-      />
+      ></div>
     );
   }
 }
