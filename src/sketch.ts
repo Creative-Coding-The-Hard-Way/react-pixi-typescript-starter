@@ -1,5 +1,10 @@
 import PIXISketch from "../lib/PIXISketch";
 import { Sprite, Renderer, Container, Texture } from "pixi.js";
+import { proxy } from "valtio";
+
+export const store = proxy<{
+  scale: number;
+}>({ scale: 1 });
 
 export default class MySketch extends PIXISketch {
   sprite: Sprite;
@@ -8,18 +13,21 @@ export default class MySketch extends PIXISketch {
   constructor(renderer: Renderer, stage: Container) {
     super(renderer, stage);
 
-    this.sprite = Sprite.from(Texture.WHITE);
+    renderer.background.color = 0x555566;
+
+    this.sprite = stage.addChild(Sprite.from(Texture.WHITE));
     this.sprite.width = 20;
     this.sprite.height = 20;
     this.sprite.x = 200;
     this.sprite.y = 200;
 
     this.vel = [-100.0, 100.0];
-
-    stage.addChild(this.sprite);
   }
 
   update(dt: number): void {
+    this.sprite.scale.x = store.scale;
+    this.sprite.scale.y = store.scale;
+
     this.sprite.x += this.vel[0] * dt;
     this.sprite.y += this.vel[1] * dt;
 

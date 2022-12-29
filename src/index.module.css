@@ -5,3 +5,26 @@
   max-height: 100%;
   max-width: 100%;
 }
+
+.controlPanel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  padding: 1rem;
+  background: grey;
+  opacity: 0.8;
+  border-radius: 0.5rem;
+}
+
+.controlPanel > label {
+  display: block;
+  padding-bottom: 0.5rem;
+  color: lightgrey;
+  font-family: sans-serif;
+  font-weight: bold;
+}
+
+.controlPanel:hover {
+  opacity: 1;
+}
