@@ -1,4 +1,4 @@
-# React+Pixi.js Typescript Browser Starter
+# [React+Pixi.js Typescript Browser Starter](https://creative-coding-the-hard-way.github.io/react-pixi-typescript-starter/)
 
 An opinionated starter project for using Typescript, React, and Pixi.js in the
 browser.
