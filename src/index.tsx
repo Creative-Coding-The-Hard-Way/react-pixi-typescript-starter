@@ -18,18 +18,46 @@ function App() {
         }}
       >
         <div className={styles.controlPanel}>
-          <label htmlFor="scaleSlider">
-            Sprite Scale {Math.round(snap.scale * 100) / 100}
+          <label htmlFor="xFrequency">
+            xFrequency {Math.round(snap.xFrequency * 100) / 100}
           </label>
           <input
-            id="scaleSlider"
+            id="xFrequency"
             type="range"
             min="0.5"
-            max="10"
+            max="5"
             step="0.05"
-            value={snap.scale}
+            value={snap.xFrequency}
             onChange={(event) => {
-              store.scale = parseFloat(event.target.value);
+              store.xFrequency = parseFloat(event.target.value);
+            }}
+          />
+
+          <label htmlFor="yFrequency">
+            yFrequency {Math.round(snap.yFrequency * 100) / 100}
+          </label>
+          <input
+            id="yFrequency"
+            type="range"
+            min="0.5"
+            max="5"
+            step="0.05"
+            value={snap.yFrequency}
+            onChange={(event) => {
+              store.yFrequency = parseFloat(event.target.value);
+            }}
+          />
+
+          <label htmlFor="pointsCount">points {snap.points}</label>
+          <input
+            id="pointsCount"
+            type="range"
+            min="4"
+            max="20"
+            step="1"
+            value={snap.points}
+            onChange={(event) => {
+              store.points = Math.round(parseFloat(event.target.value));
             }}
           />
         </div>
